@@ -1,6 +1,7 @@
 name: Import binary NeuroPlay assets
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - neuroplay-complete-integration
