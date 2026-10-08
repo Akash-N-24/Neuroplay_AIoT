@@ -1,0 +1,46 @@
+name: Import binary NeuroPlay assets
+
+on:
+  push:
+    branches:
+      - neuroplay-complete-integration
+    paths:
+      - ".github/workflows/import-binary-assets.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download pinned upstream binary assets
+        run: |
+          set -e
+          UPSTREAM="https://github.com/Bhanuteja12-coder/NeuroPlay/archive/a79da97c68442d81026a0db0b825270f43cc8c69.zip"
+          curl -L --fail "$UPSTREAM" -o /tmp/upstream.zip
+          rm -rf /tmp/upstream
+          mkdir -p /tmp/upstream
+          unzip -q /tmp/upstream.zip -d /tmp/upstream
+          SRC=$(find /tmp/upstream -maxdepth 1 -type d -name "NeuroPlay-*")
+          mkdir -p ai-model frontend/android
+          cp "$SRC/ai-model/feature_columns.pkl" ai-model/feature_columns.pkl
+          cp "$SRC/ai-model/stress_model_final.pkl" ai-model/stress_model_final.pkl
+          cp -R "$SRC/frontend/android/." frontend/android/
+
+      - name: Commit imported assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ai-model/*.pkl frontend/android
+          if git diff --cached --quiet; then
+            echo "No binary asset changes."
+            exit 0
+          fi
+          git commit -m "Import NeuroPlay binary model and Android assets"
+          git push origin HEAD:neuroplay-complete-integration
