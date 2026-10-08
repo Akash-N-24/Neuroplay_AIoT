@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - neuroplay-complete-integration
+      - main
     paths:
       - ".github/workflows/import-binary-assets.yml"
 
